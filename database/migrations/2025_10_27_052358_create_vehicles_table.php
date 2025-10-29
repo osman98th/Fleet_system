@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
+            $table->string('name'); // Vehicle name (instead of vehicle_name)
+            $table->string('model')->nullable();
+            $table->string('license_plate')->unique();
+            $table->string('type')->nullable(); // Car, Truck, Bus etc.
+            $table->year('manufacture_year')->nullable();
+            $table->integer('mileage')->default(0);
+            $table->string('status')->default('active'); // active / inactive
             $table->timestamps();
         });
     }

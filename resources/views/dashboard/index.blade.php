@@ -9,19 +9,44 @@
     <div class="summary-cards">
         <div class="card">
             <h3>Total Vehicles</h3>
-            <p>{{ $totalVehicles }}</p>
+            <p>{{ $totalVehicles ?? 0 }}</p>
         </div>
         <div class="card">
             <h3>Total Drivers</h3>
-            <p>{{ $totalDrivers }}</p>
+            <p>{{ $totalDrivers ?? 0 }}</p>
         </div>
         <div class="card">
             <h3>Total Fuel Cost</h3>
-            <p>${{ number_format($totalFuelCost, 2) }}</p>
+            <p>${{ number_format($totalFuelCost ?? 0, 2) }}</p>
         </div>
         <div class="card">
             <h3>Avg. Fuel Cost</h3>
-            <p>${{ number_format($avgFuelCost, 2) }}</p>
+            <p>${{ number_format($avgFuelCost ?? 0, 2) }}</p>
+        </div>
+    </div>
+
+    <!-- ==== 🌐 Fleet Management System Features (Circular Layout) ==== -->
+    <div class="fleet-features-circle">
+        <h3>Top Features of the Fleet Management System</h3>
+
+        <div class="circle-container">
+            <!-- Center Icon -->
+            <div class="center-icon">
+                <img src="{{ asset('images/fms.png') }}" alt="Fleet Icon">
+            </div>
+
+            <!-- Feature items placed around the circle -->
+            <div class="feature-item item1">Dynamic Admin Panel</div>
+            <div class="feature-item item2">User Management System</div>
+            <div class="feature-item item3">GPS Tracking System</div>
+            <div class="feature-item item4">Fuel Management</div>
+            <div class="feature-item item5">Financial Management System</div>
+            <div class="feature-item item6">Human Resource Management System</div>
+            <div class="feature-item item7">Inventory Management System</div>
+            <div class="feature-item item8">Service Management</div>
+            <div class="feature-item item9">Vehicle Assignment System</div>
+            <div class="feature-item item10">Reporting System</div>
+            <div class="feature-item item11">Real-Time Notification System</div>
         </div>
     </div>
 
@@ -41,10 +66,10 @@
                 <table>
                     <thead><tr><th>Vehicle Name</th><th>Added On</th></tr></thead>
                     <tbody>
-                        @forelse($recentVehicles as $v)
+                        @forelse($recentVehicles ?? [] as $v)
                         <tr>
-                            <td>{{ $v->vehicle_name }}</td>
-                            <td>{{ $v->created_at->format('d M, Y') }}</td>
+                            <td>{{ $v->vehicle_name ?? 'N/A' }}</td>
+                            <td>{{ isset($v->created_at) ? \Carbon\Carbon::parse($v->created_at)->format('d M, Y') : 'N/A' }}</td>
                         </tr>
                         @empty
                         <tr><td colspan="2">No records found</td></tr>
@@ -58,10 +83,10 @@
                 <table>
                     <thead><tr><th>Driver Name</th><th>Joined On</th></tr></thead>
                     <tbody>
-                        @forelse($recentDrivers as $d)
+                        @forelse($recentDrivers ?? [] as $d)
                         <tr>
-                            <td>{{ $d->driver_name }}</td>
-                            <td>{{ $d->created_at->format('d M, Y') }}</td>
+                            <td>{{ $d->driver_name ?? 'N/A' }}</td>
+                            <td>{{ isset($d->created_at) ? \Carbon\Carbon::parse($d->created_at)->format('d M, Y') : 'N/A' }}</td>
                         </tr>
                         @empty
                         <tr><td colspan="2">No records found</td></tr>
@@ -75,11 +100,11 @@
                 <table>
                     <thead><tr><th>Date</th><th>Liters</th><th>Cost</th></tr></thead>
                     <tbody>
-                        @forelse($recentFuel as $f)
+                        @forelse($recentFuel ?? [] as $f)
                         <tr>
-                            <td>{{ $f->date }}</td>
-                            <td>{{ $f->liters }}</td>
-                            <td>${{ number_format($f->cost, 2) }}</td>
+                            <td>{{ isset($f->date) ? \Carbon\Carbon::parse($f->date)->format('d M, Y') : 'N/A' }}</td>
+                            <td>{{ $f->liters ?? 0 }}</td>
+                            <td>${{ number_format($f->cost ?? 0, 2) }}</td>
                         </tr>
                         @empty
                         <tr><td colspan="3">No fuel data yet</td></tr>
@@ -94,8 +119,15 @@
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const labels = {!! json_encode($chartData->pluck('date')) !!};
-const values = {!! json_encode($chartData->pluck('total_cost')) !!};
+const chartData = [
+  { date: '2025-10-25', total_cost: 500 },
+  { date: '2025-10-26', total_cost: 750 },
+  { date: '2025-10-27', total_cost: 300 },
+  { date: '2025-10-28', total_cost: 900 },
+];
+
+const labels = chartData.map(item => new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
+const values = chartData.map(item => item.total_cost ?? 0);
 
 const ctx = document.getElementById('fuelChart').getContext('2d');
 new Chart(ctx, {
@@ -110,9 +142,7 @@ new Chart(ctx, {
         }]
     },
     options: {
-        plugins: {
-            title: { display: true, text: 'Last 7 Days Fuel Cost Summary', font: { size: 16 } }
-        },
+        plugins: { title: { display: true, text: 'Last 7 Days Fuel Cost Summary', font: { size: 16 } } },
         scales: { y: { beginAtZero: true } }
     }
 });
@@ -140,7 +170,86 @@ new Chart(ctx, {
 .card h3 { color: #002855; font-size: 18px; }
 .card p { font-size: 22px; color: #007bff; margin: 5px 0 0 0; }
 
-/* Chart Section */
+/* ==== Fleet Management Circular Layout ==== */
+.fleet-features-circle {
+    background: #fff;
+    border-radius: 12px;
+    padding: 40px 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    margin-bottom: 50px;
+    text-align: center;
+    position: relative;
+}
+.fleet-features-circle h3 {
+    color: #002855;
+    margin-bottom: 40px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.circle-container {
+    position: relative;
+    width: 500px;
+    height: 500px;
+    margin: 0 auto;
+    border: 2px dashed #007bff3a;
+    border-radius: 50%;
+}
+
+/* Center Icon Image */
+.center-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #007bff;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+.center-icon img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+
+/* Feature cards */
+.feature-item {
+    position: absolute;
+    background: #f0f4f8;
+    color: #007bff;
+    font-weight: 600;
+    padding: 10px 14px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    width: 180px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+.feature-item:hover {
+    background: #007bff;
+    color: #fff;
+    transform: scale(1.05);
+}
+
+/* ==== Positions around circle ==== */
+.item1  { top: 0%;   left: 50%; transform: translate(-50%, -50%); }
+.item2  { top: 10%;  right: 10%; transform: translate(50%, 0); }
+.item3  { top: 30%;  right: 0%; transform: translate(50%, 0); }
+.item4  { top: 55%;  right: 0%; transform: translate(50%, -50%); }
+.item5  { top: 75%;  right: 10%; transform: translate(50%, 0); }
+.item6  { bottom: 0%; left: 50%; transform: translate(-50%, 50%); }
+.item7  { top: 75%;  left: 10%; transform: translate(-50%, 0); }
+.item8  { top: 55%;  left: 0%; transform: translate(-50%, -50%); }
+.item9  { top: 30%;  left: 0%; transform: translate(-50%, 0); }
+.item10 { top: 10%;  left: 10%; transform: translate(-50%, 0); }
+.item11 { top: -5%;  left: 50%; transform: translate(-50%, -50%); }
+
+/* ==== Chart Section ==== */
 .chart-section {
     background: white;
     padding: 20px;
@@ -149,11 +258,8 @@ new Chart(ctx, {
     margin-bottom: 40px;
 }
 
-/* Recent Activities */
-.recent-activities h3 {
-    color: #002855;
-    margin-bottom: 15px;
-}
+/* ==== Recent Activities ==== */
+.recent-activities h3 { color: #002855; margin-bottom: 15px; }
 .activity-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -165,23 +271,40 @@ new Chart(ctx, {
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     padding: 15px;
 }
-.activity-card h4 {
-    margin-bottom: 10px;
-    color: #007bff;
-}
+.activity-card h4 { margin-bottom: 10px; color: #007bff; }
 .activity-card table {
     width: 100%;
     border-collapse: collapse;
+    overflow-x: auto;
+    display: block;
 }
 .activity-card th, .activity-card td {
     border-bottom: 1px solid #ddd;
     padding: 8px;
     text-align: left;
 }
-.activity-card th {
-    background-color: #f0f4f8;
-    color: #002855;
-}
+.activity-card th { background-color: #f0f4f8; color: #002855; }
 .activity-card tr:hover { background-color: #f9fbff; }
+
+/* ==== Responsive ==== */
+@media (max-width: 768px) {
+    .circle-container {
+        width: 320px;
+        height: 320px;
+    }
+    .center-icon {
+        width: 80px;
+        height: 80px;
+    }
+    .center-icon img {
+        width: 55px;
+        height: 55px;
+    }
+    .feature-item {
+        width: 130px;
+        font-size: 12px;
+        padding: 8px;
+    }
+}
 </style>
 @endsection
