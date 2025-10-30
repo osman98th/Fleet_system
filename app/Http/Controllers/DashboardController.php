@@ -9,45 +9,50 @@ use App\Models\FuelRecord;
 
 class DashboardController extends Controller
 {
-    public function index()
-    {
-        // === Summary ===
-        $totalVehicles = Vehicle::count();
-        $totalDrivers  = Driver::count();
-        $totalFuelCost = FuelRecord::sum('cost');
-        $avgFuelCost   = FuelRecord::avg('cost');
+   
+public function index()
+{
+    $totalVehicles = Vehicle::count();
+    $totalDrivers = Driver::count();
+    $totalFuelCost = FuelRecord::sum('cost');
+    $avgFuelCost = FuelRecord::avg('cost');
 
-        // === Fuel Cost Chart (Last 7 days) ===
-        $chartData = FuelRecord::selectRaw('DATE(date) as date, SUM(cost) as total_cost')
-            ->groupBy('date')
-            ->orderBy('date', 'desc')
-            ->take(7)
-            ->get()
-            ->reverse();
+    $recentVehicles = Vehicle::latest()->take(5)->get();
+    $recentDrivers = Driver::latest()->take(5)->get();
+    $recentFuel = FuelRecord::latest()->take(5)->get();
 
-        // === Recent Activity (Last 5 Records) ===
-        // changed: fallback for missing `vehicle_name` column
-        $recentVehicles = Vehicle::select('id', 'name as vehicle_name', 'created_at')
-            ->latest()
-            ->take(5)
-            ->get();
+    $fuelChart = FuelRecord::selectRaw('DATE(date) as date, SUM(cost) as total_cost')
+        ->where('date', '>=', now()->subDays(6))
+        ->groupBy('date')
+        ->orderBy('date', 'asc')
+        ->get();
 
-        $recentDrivers  = Driver::select('id', 'name as driver_name', 'created_at')
-            ->latest()
-            ->take(5)
-            ->get();
+    $fleetFeatures = [
+        'Dynamic Admin Panel',
+        'User Management System',
+        'GPS Tracking System',
+        'Fuel Management',
+        'Financial Management System',
+        'Human Resource Management System',
+        'Inventory Management System',
+        'Service Management',
+        'Vehicle Assignment System',
+        'Reporting System',
+        'Real-Time Notification System',
+    ];
 
-        $recentFuel     = FuelRecord::latest()->take(5)->get(['date', 'liters', 'cost', 'created_at']);
+    return view('dashboard.index', compact(
+        'totalVehicles', 
+        'totalDrivers', 
+        'totalFuelCost', 
+        'avgFuelCost', 
+        'recentVehicles', 
+        'recentDrivers', 
+        'recentFuel', 
+        'fuelChart',
+        'fleetFeatures'
+    ));
+}
 
-        return view('dashboard.index', compact(
-            'totalVehicles',
-            'totalDrivers',
-            'totalFuelCost',
-            'avgFuelCost',
-            'chartData',
-            'recentVehicles',
-            'recentDrivers',
-            'recentFuel'
-        ));
-    }
+
 }

@@ -18,25 +18,17 @@ class VehicleController extends Controller
         return view('vehicles.create');
     }
 
- public function store(Request $request)
+    public function store(Request $request)
     {
-    $request->validate([
-        'vehicle_name' => 'required',
-        'model' => 'required',
-        'license_plate' => 'required',
-    ]);
+        $request->validate([
+            'vehicle_name' => 'required',
+            'model' => 'required',
+            'license_plate' => 'required',
+        ]);
 
-    Vehicle::create([
-        'name' => $request->vehicle_name, // পরিবর্তন এখানে
-        'model' => $request->model,
-        'license_plate' => $request->license_plate,
-        'manufacture_year' => $request->year,
-        'status' => $request->status,
-    ]);
-
-    return redirect()->route('vehicles.index')->with('success', 'Vehicle added successfully!');
-}
-
+        Vehicle::create($request->all());
+        return redirect()->route('vehicles.index')->with('success', 'Vehicle added successfully!');
+    }
 
     public function edit(Vehicle $vehicle)
     {

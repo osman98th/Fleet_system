@@ -1,49 +1,46 @@
-@extends('layouts.app')
-@section('title', 'Vehicles')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Dashboard') - My Fleet Management System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100">
 
-@section('content')
-<div class="dashboard">
-    <h2>Vehicle List</h2>
+    <div class="container-fluid">
+        <div class="row">
 
-    @if(session('success'))
-        <p class="alert-success">{{ session('success') }}</p>
-    @endif
+            <!-- Sidebar -->
+            <aside class="col-md-2 col-lg-2 bg-light sidebar py-4">
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a href="{{ route('dashboard') }}" class="nav-link">🏠 Dashboard</a></li>
+                    <li class="nav-item"><a href="{{ route('vehicles.index') }}" class="nav-link">🚗 Vehicles</a></li>
+                    <li class="nav-item"><a href="{{ route('drivers.index') }}" class="nav-link">👨‍✈️ Drivers</a></li>
+                    <li class="nav-item"><a href="{{ route('assignments.index') }}" class="nav-link">🔁 Assignments</a></li>
+                    <li class="nav-item"><a href="{{ route('fuels.index') }}" class="nav-link">⛽ Fuel Records</a></li>
+                    <li class="nav-item"><a href="{{ route('reports.fuel') }}" class="nav-link">📊 Reports</a></li>
+                    <li class="nav-item"><a href="{{ route('profile.edit') }}" class="nav-link">👤 Profile</a></li>
+                </ul>
+            </aside>
 
-    <a href="{{ route('vehicles.create') }}" class="btn">+ Add Vehicle</a>
+            <!-- Main Content -->
+            <main class="col-md-10 col-lg-10 py-4">
+                @yield('content')
+            </main>
 
-    <table class="vehicle-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Vehicle Name</th>
-                <th>Model</th>
-                <th>License Plate</th>
-                <th>Year</th>
-                <th>Status</th>
-                <th>Action</th>
-                <th>Details</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($vehicles as $v)
-            <tr>
-                <td>{{ $v->id }}</td>
-                <td>{{ $v->vehicle_name }}</td>
-                <td>{{ $v->model }}</td>
-                <td>{{ $v->license_plate }}</td>
-                <td>{{ $v->year }}</td>
-                <td>{{ $v->status }}</td>
-                <td>
-                    <a href="{{ route('vehicles.edit', $v->id) }}" class="edit-btn">Edit</a>
-                    <form action="{{ route('vehicles.destroy', $v->id) }}" method="POST" style="display:inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button class="delete-btn" onclick="return confirm('Delete this vehicle?')">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-</div>
-@endsection
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        &copy; {{ date('Y') }} My Fleet Management System
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

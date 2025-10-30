@@ -1,28 +1,45 @@
 <?php
 
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\DriverController;
-use App\Http\Controllers\VehicleAssignmentController;
-use App\Http\Controllers\FuelRecordController;
+use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\FuelController;
 use App\Http\Controllers\ReportController;
-
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+// Dashboard route
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
-Route::resource('vehicles', VehicleController::class);
-Route::resource('drivers', DriverController::class);
-Route::resource('assignments', VehicleAssignmentController::class);
-Route::resource('fuels', FuelRecordController::class);
-Route::get('/reports/fuel', [ReportController::class, 'fuelReport'])->name('reports.fuel');
+// All authenticated routes
+Route::middleware(['auth', 'verified'])->group(function () {
 
-Route::get('/dashboard', function () {
-return "Welcome to Dashboard";
-})->middleware('auth.custom');
+    // Vehicles CRUD
+    Route::resource('vehicles', VehicleController::class);
 
+    // Drivers CRUD
+    Route::resource('drivers', DriverController::class);
+
+    // Assignments CRUD
+    Route::resource('assignments', AssignmentController::class);
+
+    // Fuel Records CRUD
+    // Route::resource('fuels', FuelController::class);
+
+    // Fuel Reports
+    Route::get('/reports/fuel', [ReportController::class, 'fuel'])->name('reports.fuel');
+
+    // Profile routes (default Laravel Breeze)
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';
