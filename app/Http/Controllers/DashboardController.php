@@ -5,54 +5,58 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Vehicle;
 use App\Models\Driver;
-use App\Models\FuelRecord;
+use App\Models\Assignment;
+use App\Models\Fuel;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-   
-public function index()
-{
-    $totalVehicles = Vehicle::count();
-    $totalDrivers = Driver::count();
-    $totalFuelCost = FuelRecord::sum('cost');
-    $avgFuelCost = FuelRecord::avg('cost');
+    public function index()
+    {
+        $totalVehicles    = Vehicle::count();
+        $totalDrivers     = Driver::count();
+        $totalAssignments = Assignment::count();
+        $totalFuelRecords = Fuel::count();
 
-    $recentVehicles = Vehicle::latest()->take(5)->get();
-    $recentDrivers = Driver::latest()->take(5)->get();
-    $recentFuel = FuelRecord::latest()->take(5)->get();
+        $recentVehicles = Vehicle::latest()->take(5)->get();
+        $recentFuels    = Fuel::with(['vehicle','driver'])->latest()->take(5)->get();
 
-    $fuelChart = FuelRecord::selectRaw('DATE(date) as date, SUM(cost) as total_cost')
-        ->where('date', '>=', now()->subDays(6))
-        ->groupBy('date')
-        ->orderBy('date', 'asc')
-        ->get();
+        $fuelChartData = Fuel::selectRaw('DATE(date) as fuel_date, SUM(quantity) as qty')
+            ->whereDate('date', '>=', now()->subDays(7))
+            ->groupBy('fuel_date')
+            ->orderBy('fuel_date','ASC')
+            ->get();
 
-    $fleetFeatures = [
-        'Dynamic Admin Panel',
-        'User Management System',
-        'GPS Tracking System',
-        'Fuel Management',
-        'Financial Management System',
-        'Human Resource Management System',
-        'Inventory Management System',
-        'Service Management',
-        'Vehicle Assignment System',
-        'Reporting System',
-        'Real-Time Notification System',
-    ];
+        $fuelChartLabels = $fuelChartData->pluck('fuel_date')->map(fn($d) => Carbon::parse($d)->format('d M'));
+        $fuelChartData   = $fuelChartData->pluck('qty');
 
-    return view('dashboard.index', compact(
-        'totalVehicles', 
-        'totalDrivers', 
-        'totalFuelCost', 
-        'avgFuelCost', 
-        'recentVehicles', 
-        'recentDrivers', 
-        'recentFuel', 
-        'fuelChart',
-        'fleetFeatures'
-    ));
-}
+        $vehicles = Vehicle::orderBy('name')->get();
+        $drivers  = Driver::orderBy('name')->get();
 
+        return view('dashboard.index', compact(
+            'totalVehicles','totalDrivers','totalAssignments','totalFuelRecords',
+            'recentVehicles','recentFuels',
+            'fuelChartLabels','fuelChartData',
+            'vehicles','drivers'
+        ));
+    }
 
+    public function filterFuel(Request $request)
+    {
+        $fuels = Fuel::with(['vehicle','driver'])
+            ->when($request->vehicle_id, fn($q)=>$q->where('vehicle_id',$request->vehicle_id))
+            ->when($request->driver_id, fn($q)=>$q->where('driver_id',$request->driver_id))
+            ->orderBy('date','asc')
+            ->get();
+
+        $data = $fuels->map(fn($fuel)=>[
+            'vehicle_name'=>$fuel->vehicle->name ?? 'N/A',
+            'driver_name'=>$fuel->driver->name ?? 'Unassigned',
+            'quantity'=>$fuel->quantity,
+            'price'=>number_format($fuel->price,2),
+            'date'=>Carbon::parse($fuel->date)->format('d M Y'),
+        ]);
+
+        return response()->json($data);
+    }
 }

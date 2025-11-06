@@ -25,14 +25,21 @@ class AssignmentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required',
-            'driver_id' => 'required|exists:drivers,id',
             'vehicle_id' => 'required|exists:vehicles,id',
-            'status' => 'nullable',
+            'driver_id' => 'required|exists:drivers,id',
+            'assigned_date' => 'required|date',
+            'status' => 'required|in:assigned,completed,pending',
         ]);
 
-        Assignment::create($request->all());
-        return redirect()->route('assignments.index')->with('success', 'Assignment added successfully!');
+        Assignment::create($request->only([
+            'vehicle_id',
+            'driver_id',
+            'assigned_date',
+            'status',
+        ]));
+
+        return redirect()->route('assignments.index')
+            ->with('success', 'Assignment created successfully!');
     }
 
     public function edit(Assignment $assignment)
@@ -45,19 +52,27 @@ class AssignmentController extends Controller
     public function update(Request $request, Assignment $assignment)
     {
         $request->validate([
-            'title' => 'required',
-            'driver_id' => 'required|exists:drivers,id',
             'vehicle_id' => 'required|exists:vehicles,id',
-            'status' => 'nullable',
+            'driver_id' => 'required|exists:drivers,id',
+            'assigned_date' => 'required|date',
+            'status' => 'required|in:assigned,completed,pending',
         ]);
 
-        $assignment->update($request->all());
-        return redirect()->route('assignments.index')->with('success', 'Assignment updated successfully!');
+        $assignment->update($request->only([
+            'vehicle_id',
+            'driver_id',
+            'assigned_date',
+            'status',
+        ]));
+
+        return redirect()->route('assignments.index')
+            ->with('success', 'Assignment updated successfully!');
     }
 
-    // public function destroy(Assignment $assignment)
-    // {
-    //     $assignment->delete();
-    //     return redirect()->route('assignments.index')->with('success', 'Assignment deleted successfully!');
-    // }
+    public function destroy(Assignment $assignment)
+    {
+        $assignment->delete();
+        return redirect()->route('assignments.index')
+            ->with('success', 'Assignment deleted successfully!');
+    }
 }

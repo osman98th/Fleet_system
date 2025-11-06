@@ -21,8 +21,10 @@ class VehicleController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'vehicle_name' => 'required',
+            'name' => 'required',
             'model' => 'required',
+            'type' => 'required',
+
             'license_plate' => 'required',
         ]);
 
@@ -40,6 +42,7 @@ class VehicleController extends Controller
         $request->validate([
             'vehicle_name' => 'required',
             'model' => 'required',
+            'type' => 'required',
             'license_plate' => 'required',
         ]);
 

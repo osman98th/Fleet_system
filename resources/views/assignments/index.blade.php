@@ -1,46 +1,62 @@
 @extends('layouts.app')
-@section('title', 'Vehicle Assignments')
 
 @section('content')
-<div class="dashboard">
-    <h2>Vehicle Assignments</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Assignments List</h3>
+    <a href="{{ route('assignments.create') }}" class="btn btn-success btn-sm">+ Add Assignment</a>
+</div>
 
-    @if(session('success'))
-        <p class="alert-success">{{ session('success') }}</p>
-    @endif
+@if(session('success'))
+<div class="alert alert-success">{{ session('success') }}</div>
+@endif
 
-    <a href="{{ route('assignments.create') }}" class="btn">+ New Assignment</a>
+<div class="card">
+    <div class="card-body table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Vehicle</th>
+                    <th>Type</th>
+                    <th>Driver</th>
+                    <th>Assigned Date</th>
+                    <th>Status</th>
+                    <th width="170">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($assignments as $item)
+                <tr>
+                    <td>{{ $item->id }}</td>
+                    <td>{{ $item->vehicle->name ?? 'N/A' }}</td>
+                    <td>{{ $item->vehicle->type ?? '-' }}</td>
+                    <td>{{ $item->driver->name ?? 'N/A' }}</td>
+                    <td>{{ \Carbon\Carbon::parse($item->assigned_date)->format('d-m-Y') }}</td>
+                    <td>
+                        @if($item->status == 'assigned')
+                            <span class="badge bg-success">Assigned</span>
+                        @elseif($item->status == 'pending')
+                            <span class="badge bg-warning">Pending</span>
+                        @else
+                            <span class="badge bg-secondary">Completed</span>
+                        @endif
+                    </td>
+                    <td>
+                        <a href="{{ route('assignments.edit', $item->id) }}" class="btn btn-primary btn-sm">Edit</a>
 
-    <table class="vehicle-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Vehicle</th>
-                <th>Driver</th>
-                <th>Assigned Date</th>
-                <th>Status</th>
-                <th>Action</th>
-                <th>Details</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($assignments as $a)
-            <tr>
-                <td>{{ $a->id }}</td>
-                <td>{{ $a->vehicle->vehicle_name ?? 'N/A' }}</td>
-                <td>{{ $a->driver->name ?? 'N/A' }}</td>
-                <td>{{ $a->assigned_date }}</td>
-                <td>{{ $a->status }}</td>
-                <td>
-                    <form action="{{ route('assignments.destroy', $a->id) }}" method="POST" style="display:inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button class="delete-btn" onclick="return confirm('Delete this assignment?')">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+                        <form action="{{ route('assignments.destroy', $item->id) }}" method="POST" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button onclick="return confirm('Are you sure?')" class="btn btn-danger btn-sm">
+                                Delete
+                            </button>
+                        </form>
+
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

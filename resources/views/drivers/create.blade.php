@@ -1,83 +1,65 @@
 @extends('layouts.app')
-@section('title', 'Add New Driver')
+
+@section('title', 'Add Driver')
 
 @section('content')
 <div class="container py-4">
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Add New Driver</h4>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">🚚 Add New Driver</h3>
+        <a href="{{ route('drivers.index') }}" class="btn btn-secondary btn-sm">← Back to Driver List</a>
+    </div>
 
+    <div class="card shadow-sm">
         <div class="card-body">
-            <form action="{{ route('drivers.store') }}" method="POST">
+            <form action="{{ route('drivers.store') }}" method="POST" class="row g-3">
                 @csrf
 
-                <div class="row">
-                    <!-- Driver ID -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Driver ID</label>
-                        <input type="text" name="driver_id" class="form-control" placeholder="e.g. DR-102" required>
-                    </div>
-
-                    <!-- Name -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Driver Name</label>
-                        <input type="text" name="name" class="form-control" placeholder="Driver Full Name" required>
-                    </div>
-
-                    <!-- License Number -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">License Number</label>
-                        <input type="text" name="license_number" class="form-control" placeholder="License Number" required>
-                    </div>
-
-                    <!-- Phone -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Phone</label>
-                        <input type="text" name="phone" class="form-control" placeholder="Phone Number" required>
-                    </div>
-
-                    <!-- Address -->
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label">Address</label>
-                        <textarea name="address" class="form-control" placeholder="Enter Address"></textarea>
-                    </div>
-
-                    <!-- Vehicle Type -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Vehicle Type</label>
-                        <select name="vehicle_type" class="form-select" required>
-                            <option selected disabled>Choose Vehicle Type</option>
-                            <option>Truck</option>
-                            <option>Bus</option>
-                            <option>Car</option>
-                            <option>Pickup</option>
-                        </select>
-                    </div>
-
-                    <!-- Route -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Route</label>
-                        <select name="route" class="form-select" required>
-                            <option selected disabled>Choose Route</option>
-                            <option>Dhaka → Barishal</option>
-                            <option>Dhaka → Chattogram</option>
-                            <option>Dhaka → Sylhet</option>
-                            <option>Dhaka → Rajshahi</option>
-                        </select>
-                    </div>
-
-                    <!-- Status -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
-                            <option>Available</option>
-                            <option>Unavailable</option>
-                        </select>
-                    </div>
+                <div class="col-md-6">
+                    <label class="form-label">Name</label>
+                    <input type="text" name="name" class="form-control" required>
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-2">Save Driver</button>
+                <div class="col-md-6">
+                    <label class="form-label">License Number</label>
+                    <input type="text" name="license_number" class="form-control" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-control" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Address</label>
+                    <input type="text" name="address" class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Assign Vehicle</label>
+                    <select name="vehicle_id" class="form-select">
+                        <option value="" selected disabled>-- Select Vehicle --</option>
+                        @foreach($vehicles as $vehicle)
+                            <option value="{{ $vehicle->id }}">{{ $vehicle->name }} ({{ $vehicle->type }})</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Route</label>
+                    <input type="text" name="route" class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select" required>
+                        <option value="Available" selected>Available</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="col-12 mt-3">
+                    <button type="submit" class="btn btn-primary">💾 Save Driver</button>
+                </div>
             </form>
         </div>
     </div>

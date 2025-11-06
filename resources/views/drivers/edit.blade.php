@@ -1,84 +1,68 @@
 @extends('layouts.app')
+
 @section('title', 'Edit Driver')
 
 @section('content')
 <div class="container py-4">
-    <div class="card shadow-sm">
-        <div class="card-header bg-warning text-dark">
-            <h4 class="mb-0">Edit Driver</h4>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">✏️ Edit Driver</h3>
+        <a href="{{ route('drivers.index') }}" class="btn btn-secondary btn-sm">← Back to Driver List</a>
+    </div>
 
+    <div class="card shadow-sm">
         <div class="card-body">
-            <form action="{{ route('drivers.update', $driver->id) }}" method="POST">
+            <form action="{{ route('drivers.update', $driver->id) }}" method="POST" class="row g-3">
                 @csrf
                 @method('PUT')
 
-                <div class="row">
-                    <!-- Driver ID -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Driver ID</label>
-                        <input type="text" name="driver_id" value="{{ $driver->driver_id }}" class="form-control" required>
-                    </div>
-
-                    <!-- Name -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Driver Name</label>
-                        <input type="text" name="name" value="{{ $driver->name }}" class="form-control" required>
-                    </div>
-
-                    <!-- License Number -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">License Number</label>
-                        <input type="text" name="license_number" value="{{ $driver->license_number }}" class="form-control" required>
-                    </div>
-
-                    <!-- Phone -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Phone</label>
-                        <input type="text" name="phone" value="{{ $driver->phone }}" class="form-control" required>
-                    </div>
-
-                    <!-- Address -->
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label">Address</label>
-                        <textarea name="address" class="form-control">{{ $driver->address }}</textarea>
-                    </div>
-
-                    <!-- Vehicle Type -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Vehicle Type</label>
-                        <select name="vehicle_type" class="form-select" required>
-                            <option disabled>Choose Vehicle Type</option>
-                            <option {{ $driver->vehicle_type == 'Truck' ? 'selected' : '' }}>Truck</option>
-                            <option {{ $driver->vehicle_type == 'Bus' ? 'selected' : '' }}>Bus</option>
-                            <option {{ $driver->vehicle_type == 'Car' ? 'selected' : '' }}>Car</option>
-                            <option {{ $driver->vehicle_type == 'Pickup' ? 'selected' : '' }}>Pickup</option>
-                        </select>
-                    </div>
-
-                    <!-- Route -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Route</label>
-                        <select name="route" class="form-select" required>
-                            <option disabled>Choose Route</option>
-                            <option {{ $driver->route == 'Dhaka → Barishal' ? 'selected' : '' }}>Dhaka → Barishal</option>
-                            <option {{ $driver->route == 'Dhaka → Chattogram' ? 'selected' : '' }}>Dhaka → Chattogram</option>
-                            <option {{ $driver->route == 'Dhaka → Sylhet' ? 'selected' : '' }}>Dhaka → Sylhet</option>
-                            <option {{ $driver->route == 'Dhaka → Rajshahi' ? 'selected' : '' }}>Dhaka → Rajshahi</option>
-                        </select>
-                    </div>
-
-                    <!-- Status -->
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
-                            <option {{ $driver->status == 'Available' ? 'selected' : '' }}>Available</option>
-                            <option {{ $driver->status == 'Unavailable' ? 'selected' : '' }}>Unavailable</option>
-                        </select>
-                    </div>
+                <div class="col-md-6">
+                    <label class="form-label">Name</label>
+                    <input type="text" name="name" class="form-control" value="{{ $driver->name }}" required>
                 </div>
 
-                <button type="submit" class="btn btn-warning text-white mt-2">Update Driver</button>
+                <div class="col-md-6">
+                    <label class="form-label">License Number</label>
+                    <input type="text" name="license_number" class="form-control" value="{{ $driver->license_number }}" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-control" value="{{ $driver->phone }}" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Address</label>
+                    <input type="text" name="address" class="form-control" value="{{ $driver->address }}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Assign Vehicle</label>
+                    <select name="vehicle_id" class="form-select">
+                        <option value="" disabled>-- Select Vehicle --</option>
+                        @foreach($vehicles as $vehicle)
+                            <option value="{{ $vehicle->id }}" {{ $driver->vehicle_id == $vehicle->id ? 'selected' : '' }}>
+                                {{ $vehicle->name }} ({{ $vehicle->type }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Route</label>
+                    <input type="text" name="route" class="form-control" value="{{ $driver->route }}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select" required>
+                        <option value="Available" {{ $driver->status == 'Available' ? 'selected' : '' }}>Available</option>
+                        <option value="Inactive" {{ $driver->status == 'Inactive' ? 'selected' : '' }}>Inactive</option>
+                    </select>
+                </div>
+
+                <div class="col-12 mt-3">
+                    <button type="submit" class="btn btn-primary">✅ Update Driver</button>
+                </div>
             </form>
         </div>
     </div>
