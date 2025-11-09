@@ -1,7 +1,7 @@
     @extends('layouts.app')
 
     @section('content')
-    <div class="container-fluid py-4" style="margin-left:250px;">    <h3 class="mb-4">📋 New Booking</h3>
+    <div class="container py-4 w-75" style="margin-left:250px;">    <h3 class="mb-4">📋 New Booking</h3>
 
         <form action="{{ route('bookings.store') }}" method="POST" id="bookingForm">
             @csrf
