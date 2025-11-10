@@ -54,6 +54,8 @@ Route::middleware(['auth'])->group(function() {
     Route::get('/bookings/{booking}/edit', [BookingController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{booking}', [BookingController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{booking}', [BookingController::class, 'destroy'])->name('bookings.destroy');
+    Route::get('bookings/{booking}/invoice', [BookingController::class, 'invoice'])->name('bookings.invoice');
+
 
     // AJAX route to get fare based on car and type
     Route::get('/bookings/get-fare', [BookingController::class, 'getFare'])->name('bookings.getFare');

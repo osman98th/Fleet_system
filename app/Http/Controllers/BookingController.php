@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\Vehicle;
 use App\Models\Driver;
+use Milon\Barcode\DNS1D;
 use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
@@ -25,13 +26,13 @@ class BookingController extends Controller
 
     public function store(Request $request)
     {
-        dd($request->all());
+        // dd($request->all());
 
         $data = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
             'driver_id' => 'required|exists:drivers,id',
-            'rent_start_date' => 'required|date',
-            'rent_end_date' => 'required|date',
+            'start_datetime' => 'required|date',
+            'end_datetime' => 'required|date',
             'car_type' => 'required|in:ac,non_ac',
             'charge_type' => 'required|in:km,days',
             'distance' => 'nullable|numeric|min:0',
@@ -42,7 +43,7 @@ class BookingController extends Controller
         $data['status'] = 'Pending';
 
         $booking = Booking::create($data);
-        
+
         return redirect()->route('bookings.invoice', $booking->id)
             ->with('success', 'Booking created successfully!');
     }
@@ -59,8 +60,8 @@ class BookingController extends Controller
         $data = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
             'driver_id' => 'required|exists:drivers,id',
-            'rent_start_date' => 'required|date',
-            'rent_end_date' => 'required|date',
+            'start_datetime' => 'required|date',
+            'end_datetime' => 'required|date',
             'car_type' => 'required|in:ac,non_ac',
             'charge_type' => 'required|in:km,days',
             'distance' => 'nullable|numeric|min:0',
@@ -79,8 +80,17 @@ class BookingController extends Controller
         return redirect()->route('bookings.index')->with('success', 'Booking deleted.');
     }
 
-    public function invoice(Booking $booking)
-    {
-        return view('bookings.invoice', compact('booking'));
-    }
+    public function invoice($id)
+{
+    $booking = Booking::with(['customer', 'vehicle', 'driver'])->findOrFail($id);
+
+    // Instantiate DNS1D
+    $d = new DNS1D();
+
+    // Generate barcode for the booking ID
+    $barcode = $d->getBarcodePNG((string)$booking->id, 'C128', 2, 50);
+
+
+    return view('bookings.invoice', compact('booking', 'barcode'));
+}
 }

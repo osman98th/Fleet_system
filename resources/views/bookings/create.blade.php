@@ -1,78 +1,96 @@
-    @extends('layouts.app')
+@extends('layouts.app')
 
-    @section('content')
-    <div class="container py-4 w-75" style="margin-left:250px;">    <h3 class="mb-4">📋 New Booking</h3>
+@section('content')
+<div class="container py-4 w-75" style="margin-left:250px;">
+    <h3 class="mb-4">📋 New Booking</h3>
 
-        <form action="{{ route('bookings.store') }}" method="POST" id="bookingForm">
-            @csrf
+    <form action="{{ route('bookings.store') }}" method="POST" id="bookingForm">
+        @csrf
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
 
-            <!-- Vehicle -->
-            <div class="mb-3 ">
-                <label class="form-label">Select Vehicle</label>
-                <select name="vehicle_id" id="vehicleSelect" class="form-select" required>
-                    <option value="">-- Select Vehicle --</option>
-                    @foreach($vehicles as $vehicle)
-                    <option value="{{ $vehicle->id }}"
-                        data-ac-price="{{ $vehicle->ac_price }}"
-                        data-non-ac-price="{{ $vehicle->non_ac_price }}"
-                        data-ac-price-per-day="{{ $vehicle->ac_price_per_day }}"
-                        data-non-ac-price-per-day="{{ $vehicle->non_ac_price_per_day }}">
-                        {{ $vehicle->name }} ({{ $vehicle->license_plate }})
-                    </option>
-                    @endforeach
-                </select>
-            </div>
+        <!-- Vehicle -->
+        <div class="mb-3">
+            <label class="form-label">Select Vehicle</label>
+            <select name="vehicle_id" id="vehicleSelect" class="form-select" required>
+                <option value="">-- Select Vehicle --</option>
+                @foreach($vehicles as $vehicle)
+                <option value="{{ $vehicle->id }}"
+                    data-ac-price="{{ $vehicle->ac_price ?? 20 }}"
+                    data-non-ac-price="{{ $vehicle->non_ac_price ?? 15 }}"
+                    data-ac-price-per-day="{{ $vehicle->ac_price_per_day ?? 800 }}"
+                    data-non-ac-price-per-day="{{ $vehicle->non_ac_price_per_day ?? 600 }}">
+                    {{ $vehicle->name }} ({{ $vehicle->license_plate }})
+                </option>
 
-            <!-- Rent Dates -->
-            <div class="mb-3">
-                <label>Rent Start:</label>
-                <input type="date" name="rent_start_date" id="rentStart" class="form-control" min="{{ date('Y-m-d') }}" required>
-            </div>
-            <div class="mb-3">
-                <label>Rent End:</label>
-                <input type="date" name="rent_end_date" id="rentEnd" class="form-control" min="{{ date('Y-m-d') }}" required>
-            </div>
+                @endforeach
+            </select>
+        </div>
 
-            <!-- Car Type -->
-            <div class="mb-3">
-                <label>Car Type:</label><br>
-                <input type="radio" name="car_type" value="ac" class="carType"> AC
-                <input type="radio" name="car_type" value="non_ac" class="carType"> Non-AC
-            </div>
+        <!-- Rent Dates -->
+        <div class="mb-3">
+            <label>Rent Start:</label>
+            <input type="date" name="start_datetime" id="rentStart" class="form-control" min="{{ date('Y-m-d') }}" required>
+        </div>
+        <div class="mb-3">
+            <label>Rent End:</label>
+            <input type="date" name="end_datetime" id="rentEnd" class="form-control" min="{{ date('Y-m-d') }}" required>
+        </div>
 
-            <!-- Charge Type -->
-            <div class="mb-3">
-                <label>Charge Type:</label><br>
-                <input type="radio" name="charge_type" value="km" class="chargeType"> Per KM
-                <input type="radio" name="charge_type" value="days" class="chargeType"> Per Day
-            </div>
+        <!-- Car Type -->
+        <div class="mb-3">
+            <label>Car Type:</label><br>
+            <input type="radio" name="car_type" value="ac" class="carType"> AC
+            <input type="radio" name="car_type" value="non_ac" class="carType"> Non-AC
+        </div>
 
-            <!-- Driver -->
-            <div class="mb-3">
-                <label>Driver:</label>
-                <select name="driver_id" id="driverSelect" class="form-select" required>
-                    <option value="">-- Select Driver --</option>
-                    @foreach($drivers as $driver)
-                    <option value="{{ $driver->id }}" data-vehicle="{{ $driver->vehicle_id ?? '' }}">
-                        {{ $driver->name }} ({{ $driver->gender }})
-                    </option>
-                    @endforeach
-                </select>
-            </div>
+        <!-- Charge Type -->
+        <div class="mb-3">
+            <label>Charge Type:</label><br>
+            <input type="radio" name="charge_type" value="km" class="chargeType"> Per KM
+            <input type="radio" name="charge_type" value="days" class="chargeType"> Per Day
+        </div>
 
-            <!-- Fare -->
-            <div class="mb-3">
-                <label>Fare:</label>
-                <input type="text" id="fareDisplay" class="form-control" >
-                <input type="hidden" name="fare" id="fareInput">
-            </div>
+        <!-- Driver -->
+        <div class="mb-3">
+            <label>Driver:</label>
+            <select name="driver_id" id="driverSelect" class="form-select" required>
+                <option value="">-- Select Driver --</option>
+                @foreach($drivers as $driver)
+                <option value="{{ $driver->id }}" data-vehicle="{{ $driver->vehicle_id ?? '' }}">
+                    {{ $driver->name }} ({{ $driver->gender }})
+                </option>
+                @endforeach
+            </select>
+        </div>
 
-            <button type="submit" class="btn btn-success">Save Booking</button>
-        </form>
-    </div>
+        <!-- Distance (hidden by default) -->
+        <div class="mb-3" id="distanceField" style="display:none;">
+            <label>Distance (in KM):</label>
+            <input type="number" min="1" id="distanceInput" class="form-control" name="distance" placeholder="Enter distance in km">
+        </div>
 
-    @push('scripts')
-    <script>
+        <!-- Fare -->
+        <div class="mb-3">
+            <label>Fare:</label>
+            <input type="text" id="fareDisplay" class="form-control" readonly>
+            <input type="hidden" name="fare" id="fareInput">
+        </div>
+
+        <button type="submit" class="btn btn-success">Save Booking</button>
+    </form>
+</div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
         const vehicleSelect = document.getElementById('vehicleSelect');
         const driverSelect = document.getElementById('driverSelect');
         const carTypeRadios = document.querySelectorAll('.carType');
@@ -81,6 +99,8 @@
         const rentEnd = document.getElementById('rentEnd');
         const fareDisplay = document.getElementById('fareDisplay');
         const fareInput = document.getElementById('fareInput');
+        const distanceField = document.getElementById('distanceField');
+        const distanceInput = document.getElementById('distanceInput');
 
         function calculateFare() {
             const vehicleOption = vehicleSelect.selectedOptions[0];
@@ -91,17 +111,32 @@
             if (!carType || !chargeType) return;
 
             let fare = 0;
+
+            // Get correct base rate safely using getAttribute
             if (carType === 'ac') {
-                fare = chargeType === 'km' ? parseFloat(vehicleOption.dataset.acPrice) : parseFloat(vehicleOption.dataset.acPricePerDay);
+                fare = chargeType === 'km' ?
+                    parseFloat(vehicleOption.getAttribute('data-ac-price')) :
+                    parseFloat(vehicleOption.getAttribute('data-ac-price-per-day'));
             } else {
-                fare = chargeType === 'km' ? parseFloat(vehicleOption.dataset.nonAcPrice) : parseFloat(vehicleOption.dataset.nonAcPricePerDay);
+                fare = chargeType === 'km' ?
+                    parseFloat(vehicleOption.getAttribute('data-non-ac-price')) :
+                    parseFloat(vehicleOption.getAttribute('data-non-ac-price-per-day'));
             }
 
-            if (chargeType === 'days' && rentStart.value && rentEnd.value) {
-                const start = new Date(rentStart.value);
-                const end = new Date(rentEnd.value);
-                const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1;
-                fare *= diffDays;
+            // Per day vs per km calculation
+            if (chargeType === 'days') {
+                distanceField.style.display = 'none';
+                if (rentStart.value && rentEnd.value) {
+                    const start = new Date(rentStart.value);
+                    const end = new Date(rentEnd.value);
+                    const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+                    const days = diffDays > 0 ? diffDays : 1;
+                    fare *= days;
+                }
+            } else if (chargeType === 'km') {
+                distanceField.style.display = 'block';
+                const distance = parseFloat(distanceInput.value) || 0;
+                fare *= distance;
             }
 
             fareDisplay.value = fare.toFixed(2);
@@ -117,10 +152,22 @@
             driverSelect.value = "";
         }
 
+        // Event listeners
         vehicleSelect.addEventListener('change', () => {
             filterDrivers();
             calculateFare();
         });
-        [...carTypeRadios, ...chargeTypeRadios, rentStart, rentEnd].forEach(el => el.addEventListener('change', calculateFare));
-    </script>
-    @endpush
+
+        carTypeRadios.forEach(r => r.addEventListener('change', calculateFare));
+        chargeTypeRadios.forEach(r => r.addEventListener('change', calculateFare));
+        rentStart.addEventListener('change', calculateFare);
+        rentEnd.addEventListener('change', calculateFare);
+        distanceInput.addEventListener('input', calculateFare);
+
+        document.getElementById('bookingForm').addEventListener('submit', e => {
+            calculateFare();
+        });
+    });
+</script>
+@endpush
+@endsection
