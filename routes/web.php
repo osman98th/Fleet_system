@@ -34,14 +34,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Fuels CRUD
     Route::resource('fuels', FuelController::class);
 
-        // total-expense
-    Route::get('/total-expense', [ReportController::class, 'totalExpense'])->name('reports.fuel');
-
     // Fuel Reports
     Route::get('/reports/fuel', [ReportController::class, 'fuelReport'])->name('reports.fuel');
     Route::get('/reports/fuel/pdf', [ReportController::class, 'fuelReportPdf'])->name('reports.fuel.pdf');
 
-    // downloadPDF
+    // Total Expense
+    Route::get('/reports/total-expense', [ReportController::class, 'totalExpense'])
+        ->name('reports.total_expense');
+    Route::get('/reports/total-expense/pdf', [ReportController::class, 'totalExpensePdf'])
+        ->name('reports.total_expense.pdf');
+
+    // Booking PDF Download
     Route::get('bookings/{id}/download', [BookingController::class, 'downloadPDF'])->name('bookings.downloadPDF');
 
     // Profile
@@ -50,9 +53,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-    Route::middleware(['auth'])->group(function () {
-
-    // Booking CRUD
+// Booking CRUD (auth only)
+Route::middleware(['auth'])->group(function () {
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');

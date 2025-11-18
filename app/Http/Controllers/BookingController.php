@@ -15,23 +15,20 @@ use SimpleSoftwareIO\QrCode\Generator;
 class BookingController extends Controller
 {
     /**
-     * Display a listing of bookings with optional filters.
+     * Display a listing of bookings.
      */
     public function index(Request $request)
     {
         $query = Booking::with(['vehicle', 'driver', 'customer'])->latest();
 
-        // Filter by customer name
         if ($request->filled('customer')) {
             $query->whereHas('customer', fn($q) => $q->where('name', 'like', '%' . $request->customer . '%'));
         }
 
-        // Filter by vehicle name
         if ($request->filled('vehicle')) {
             $query->whereHas('vehicle', fn($q) => $q->where('name', 'like', '%' . $request->vehicle . '%'));
         }
 
-        // Filter by booking status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -45,18 +42,17 @@ class BookingController extends Controller
     }
 
     /**
-     * Show the form for creating a new booking.
+     * Show form to create a booking.
      */
     public function create()
     {
         $vehicles = Vehicle::all();
         $drivers  = Driver::all();
-
         return view('bookings.create', compact('vehicles', 'drivers'));
     }
 
     /**
-     * Store a newly created booking in storage and generate PDF invoice.
+     * Store a new booking.
      */
     public function store(Request $request)
     {
@@ -82,45 +78,60 @@ class BookingController extends Controller
             ]
         );
 
-        // Update email if empty
-        if (empty($customer->email)) {
-            $safeEmail = Auth::user()->email ?? ('noemail' . time() . '@example.com');
-            if (!Customer::where('email', $safeEmail)->where('id', '!=', $customer->id)->exists()) {
-                $customer->email = $safeEmail;
-                $customer->save();
-            }
-        }
-
-        // Save booking
         $data['customer_id'] = $customer->id;
-        $data['status']      = 'pending';
+        $data['status'] = 'pending';
+
         $booking = Booking::create($data);
 
-        // Barcode (DNS1D)
-        $barcodeGenerator = new DNS1D();
-        $barcode = $barcodeGenerator->getBarcodePNG(
-            'INV-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT),
-            'C39'
-        );
-
-        // QR code (SVG, no Imagick needed)
-        $qrGenerator = new Generator();
-        $qrCode = base64_encode(
-            $qrGenerator->size(120)
-                ->generate(route('bookings.invoice', $booking->id))
-        );
-
-        // Generate PDF
-        $pdf = PDF::loadView('bookings.invoice_premium', compact('booking', 'barcode', 'qrCode'));
-        return $pdf->stream('invoice_INV-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT) . '.pdf');
+        return redirect()->route('bookings.index')->with('success', 'Booking created successfully!');
     }
 
     /**
-     * Show booking invoice view with barcode and QR code.
+     * Show form to edit a booking.
      */
-    public function invoice($id)
+    public function edit(Booking $booking)
     {
-        $booking = Booking::with(['vehicle', 'driver', 'customer'])->findOrFail($id);
+        $vehicles = Vehicle::all();
+        $drivers  = Driver::all();
+        return view('bookings.edit', compact('booking', 'vehicles', 'drivers'));
+    }
+
+    /**
+     * Update an existing booking.
+     */
+    public function update(Request $request, Booking $booking)
+    {
+        $data = $request->validate([
+            'vehicle_id'    => 'required|exists:vehicles,id',
+            'driver_id'     => 'required|exists:drivers,id',
+            'start_datetime' => 'required|date',
+            'end_datetime'  => 'required|date',
+            'car_type'      => 'required|in:ac,non_ac',
+            'charge_type'   => 'required|in:km,days',
+            'distance'      => 'nullable|numeric|min:0',
+            'fare'          => 'required|numeric|min:0',
+        ]);
+
+        $booking->update($data);
+
+        return redirect()->route('bookings.index')->with('success', 'Booking updated successfully!');
+    }
+
+    /**
+     * Delete a booking.
+     */
+    public function destroy(Booking $booking)
+    {
+        $booking->delete();
+        return back()->with('success', 'Booking deleted successfully!');
+    }
+
+    /**
+     * Generate invoice view with barcode and QR code.
+     */
+    public function invoice(Booking $booking)
+    {
+        $booking->load(['vehicle', 'driver', 'customer']);
 
         $barcodeGenerator = new DNS1D();
         $barcode = $barcodeGenerator->getBarcodePNG(
@@ -130,19 +141,69 @@ class BookingController extends Controller
 
         $qrGenerator = new Generator();
         $qrCode = base64_encode(
-            $qrGenerator->size(120)
-                ->generate(route('bookings.invoice', $booking->id))
+            $qrGenerator->size(120)->generate(route('bookings.invoice', $booking->id))
         );
 
         return view('bookings.invoice_premium', compact('booking', 'barcode', 'qrCode'));
     }
 
     /**
-     * Delete a booking.
+     * Download invoice PDF.
      */
-    public function destroy($id)
+    public function downloadPDF(Booking $booking)
     {
-        Booking::findOrFail($id)->delete();
-        return back()->with('success', 'Booking deleted successfully!');
+        $booking->load(['vehicle', 'driver', 'customer']);
+
+        $barcodeGenerator = new DNS1D();
+        $barcode = $barcodeGenerator->getBarcodePNG(
+            'INV-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT),
+            'C39'
+        );
+
+        $qrGenerator = new Generator();
+        $qrCode = base64_encode(
+            $qrGenerator->size(120)->generate(route('bookings.invoice', $booking->id))
+        );
+
+        $pdf = PDF::loadView('bookings.invoice_premium', compact('booking', 'barcode', 'qrCode'));
+        return $pdf->download('invoice_INV-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT) . '.pdf');
+    }
+
+    /**
+     * AJAX: Get fare based on vehicle, car type, charge type, and distance/days.
+     */
+    public function getFare(Request $request)
+    {
+        $request->validate([
+            'vehicle_id'  => 'required|exists:vehicles,id',
+            'car_type'    => 'required|in:ac,non_ac',
+            'charge_type' => 'required|in:km,days',
+            'distance'    => 'nullable|numeric|min:0',
+            'start_date'  => 'nullable|date',
+            'end_date'    => 'nullable|date',
+        ]);
+
+        $vehicle = Vehicle::findOrFail($request->vehicle_id);
+        $fare = 0;
+
+        if ($request->car_type === 'ac') {
+            $fare = ($request->charge_type === 'km') ? $vehicle->ac_price : $vehicle->ac_price_per_day;
+        } else {
+            $fare = ($request->charge_type === 'km') ? $vehicle->non_ac_price : $vehicle->non_ac_price_per_day;
+        }
+
+        if ($request->charge_type === 'days') {
+            if ($request->start_date && $request->end_date) {
+                $start = strtotime($request->start_date);
+                $end   = strtotime($request->end_date);
+                $days  = max(1, ceil(($end - $start) / (60 * 60 * 24)));
+                $fare *= $days;
+            }
+        } else {
+            $distance = $request->distance ?? 0;
+            $fare *= $distance;
+        }
+
+        return response()->json(['fare' => number_format($fare, 2)]);
     }
 }

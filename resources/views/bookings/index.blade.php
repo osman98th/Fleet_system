@@ -3,7 +3,7 @@
 @section('title','Bookings')
 
 @section('content')
-<div class="container py-4 w-100" style="margin-left:250px;">
+<div class="container py-4 w-100" >
     <h3 class="mb-4">📋 Bookings</h3>
 
     <!-- Filter Form -->
@@ -74,13 +74,27 @@
                         @endif
                     </td>
                     <td>
-                        <a href="{{ route('bookings.edit',$booking->id) }}" class="btn btn-sm btn-info">Edit</a>
-                        <a href="{{ route('bookings.invoice',$booking->id) }}" target="_blank" class="btn btn-sm btn-secondary">Invoice</a>
-                        <form action="{{ route('bookings.destroy',$booking->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?');">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-sm btn-danger">Delete</button>
-                        </form>
+                        <div class="btn-group d-flex gap-2" role="group" aria-label="Booking Actions">
+    <!-- Edit Button -->
+    <a href="{{ route('bookings.edit', $booking->id) }}" class="btn btn-sm btn-info" title="Edit Booking">
+        <i class="fas fa-edit"></i> 
+    </a>
+
+    <!-- Invoice Button -->
+    <a href="{{ route('bookings.invoice', $booking->id) }}" target="_blank" class="btn btn-sm btn-secondary" title="View Invoice">
+        <i class="fas fa-file-invoice"></i> 
+    </a>
+
+    <!-- Delete Button -->
+    <form action="{{ route('bookings.destroy', $booking->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this booking?');">
+        @csrf
+        @method('DELETE')
+        <button class="btn btn-sm btn-danger" title="Delete Booking">
+            <i class="fas fa-trash-alt"></i> 
+        </button>
+    </form>
+</div>
+
                     </td>
                 </tr>
                 @empty

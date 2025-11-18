@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Customer extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'name',
@@ -14,15 +17,19 @@ class Customer extends Model
         'address',
     ];
 
-    // A user has one customer profile
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    // A customer can have many bookings
+    /**
+     * Customer has many Bookings
+     */
     public function bookings()
     {
         return $this->hasMany(Booking::class);
+    }
+
+    /**
+     * Customer belongs to a User (optional)
+     */
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class);
     }
 }

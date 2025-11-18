@@ -23,6 +23,7 @@
             padding-top: 60px;
             overflow-y: auto;
             transition: 0.3s;
+            z-index: 1000;
         }
 
         .sidebar a {
@@ -34,7 +35,7 @@
         }
 
         .sidebar a:hover,
-        .sidebar .active {
+        .sidebar a.active {
             background: #495057;
             color: #fff;
         }
@@ -91,11 +92,38 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">Admin Panel</div>
-        <a href="{{ route('dashboard') }}" class="active"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a>
-        <a href="{{ route('vehicles.index') }}"><i class="bi bi-truck me-2"></i> Vehicles</a>
-        <a href="{{ route('drivers.index') }}"><i class="bi bi-person-badge me-2"></i> Drivers</a>
-        <a href="{{ route('assignments.index') }}"><i class="bi bi-link me-2"></i> Assignments</a>
-        <a href="{{ route('bookings.index') }}"><i class="bi bi-file-earmark-text me-2"></i> Booking</a>
+
+        <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <i class="bi bi-speedometer2 me-2"></i> Dashboard
+        </a>
+
+        <a href="{{ route('vehicles.index') }}" class="{{ request()->routeIs('vehicles.*') ? 'active' : '' }}">
+            <i class="bi bi-truck me-2"></i> Vehicles
+        </a>
+
+        <a href="{{ route('drivers.index') }}" class="{{ request()->routeIs('drivers.*') ? 'active' : '' }}">
+            <i class="bi bi-person-badge me-2"></i> Drivers
+        </a>
+
+        <a href="{{ route('assignments.index') }}" class="{{ request()->routeIs('assignments.*') ? 'active' : '' }}">
+            <i class="bi bi-link me-2"></i> Assignments
+        </a>
+
+        <a href="{{ route('reports.fuel') }}" class="{{ request()->routeIs('reports.fuel*') ? 'active' : '' }}">
+            <i class="bi bi-fuel-pump me-2"></i> Fuel Report
+        </a>
+
+        <a href="{{ route('reports.total_expense') }}" class="{{ request()->routeIs('reports.total_expense') ? 'active' : '' }}">
+            <i class="bi bi-cash-stack me-2"></i> Total Expense
+        </a>
+
+        <a href="{{ route('bookings.index') }}" class="{{ request()->routeIs('bookings.*') ? 'active' : '' }}">
+            <i class="bi bi-file-earmark-text me-2"></i> Bookings
+        </a>
+
+        <a href="{{ route('profile.edit') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
+            <i class="bi bi-person-circle me-2"></i> Profile
+        </a>
     </div>
 
     <!-- Page Content -->
@@ -106,9 +134,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const sidebar = document.getElementById('sidebar');
-        document.getElementById('menuToggle').addEventListener('click', () => {
-            sidebar.classList.toggle('show');
-        });
+        const toggleBtn = document.getElementById('menuToggle');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('show');
+            });
+        }
     </script>
     @stack('scripts')
 </body>

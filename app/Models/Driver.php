@@ -12,20 +12,24 @@ class Driver extends Model
     protected $fillable = [
         'name',
         'gender',
-        'phone',
         'vehicle_id',
-        'driver_availability', // 'yes' or 'no'
+        'phone',
+        'license_number',
     ];
 
-    // Driver belongs to a vehicle
+    /**
+     * Driver belongs to a Vehicle
+     */
     public function vehicle()
     {
-        return $this->belongsTo(Vehicle::class, 'vehicle_id');
+        return $this->belongsTo(Vehicle::class);
     }
 
-    // Driver can have many bookings
+    /**
+     * Driver has many Bookings
+     */
     public function bookings()
     {
-        return $this->hasMany(Booking::class, 'driver_id');
+        return $this->hasMany(Booking::class);
     }
 }
