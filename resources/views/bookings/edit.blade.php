@@ -1,154 +1,165 @@
 @extends('layouts.app')
+
 @section('title','Edit Booking')
 
 @section('content')
-<div class="container py-4">
+<div class="container py-4 w-75" style="margin-left:250px;">
     <h3 class="mb-4">✏️ Edit Booking</h3>
 
     <form action="{{ route('bookings.update', $booking->id) }}" method="POST" id="bookingForm">
         @csrf
         @method('PUT')
 
-        <!-- Vehicle Selection -->
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+        </div>
+        @endif
+
+        {{-- Vehicle --}}
         <div class="mb-3">
-            <label for="vehicleSelect" class="form-label">Select Vehicle</label>
+            <label class="form-label">Select Vehicle</label>
             <select name="vehicle_id" id="vehicleSelect" class="form-select" required>
                 <option value="">-- Select Vehicle --</option>
                 @foreach($vehicles as $vehicle)
                 <option value="{{ $vehicle->id }}"
-                    data-ac-price="{{ $vehicle->ac_price }}"
-                    data-non-ac-price="{{ $vehicle->non_ac_price }}"
-                    data-ac-price-per-day="{{ $vehicle->ac_price_per_day }}"
-                    data-non-ac-price-per-day="{{ $vehicle->non_ac_price_per_day }}"
-                    {{ $vehicle->id == $booking->vehicle_id ? 'selected' : '' }}>
+                    data-ac-price="{{ $vehicle->ac_price ?? 20 }}"
+                    data-non-ac-price="{{ $vehicle->non_ac_price ?? 15 }}"
+                    data-ac-price-per-day="{{ $vehicle->ac_price_per_day ?? 800 }}"
+                    data-non-ac-price-per-day="{{ $vehicle->non_ac_price_per_day ?? 600 }}"
+                    {{ $booking->vehicle_id==$vehicle->id?'selected':'' }}>
                     {{ $vehicle->name }} ({{ $vehicle->license_plate }})
                 </option>
                 @endforeach
             </select>
         </div>
 
-        <!-- Rent Dates -->
+        {{-- Rent Dates --}}
         <div class="mb-3">
-            <label class="form-label">Rent Start:</label>
-            <input type="date" name="rent_start_date" id="rentStart" class="form-control"
-                min="{{ date('Y-m-d') }}" value="{{ $booking->rent_start_date }}" required>
+            <label>Rent Start:</label>
+            <input type="date" name="start_datetime" id="rentStart" class="form-control" min="{{ date('Y-m-d') }}" value="{{ $booking->start_datetime }}" required>
         </div>
         <div class="mb-3">
-            <label class="form-label">Rent End:</label>
-            <input type="date" name="rent_end_date" id="rentEnd" class="form-control"
-                min="{{ date('Y-m-d') }}" value="{{ $booking->rent_end_date }}" required>
+            <label>Rent End:</label>
+            <input type="date" name="end_datetime" id="rentEnd" class="form-control" min="{{ date('Y-m-d') }}" value="{{ $booking->end_datetime }}" required>
         </div>
 
-        <!-- Car Type -->
+        {{-- Car Type --}}
         <div class="mb-3">
-            <label class="form-label">Car Type:</label><br>
-            <input type="radio" name="car_type" value="ac" class="carType" {{ $booking->car_type == 'ac' ? 'checked' : '' }}> AC
-            <input type="radio" name="car_type" value="non_ac" class="carType" {{ $booking->car_type == 'non_ac' ? 'checked' : '' }}> Non-AC
+            <label>Car Type:</label><br>
+            <input type="radio" name="car_type" value="ac" class="carType" {{ $booking->car_type=='ac'?'checked':'' }}> AC
+            <input type="radio" name="car_type" value="non_ac" class="carType" {{ $booking->car_type=='non_ac'?'checked':'' }}> Non-AC
         </div>
 
-        <!-- Charge Type -->
+        {{-- Charge Type --}}
         <div class="mb-3">
-            <label class="form-label">Charge Type:</label><br>
-            <input type="radio" name="charge_type" value="km" class="chargeType" {{ $booking->charge_type == 'km' ? 'checked' : '' }}> Per KM
-            <input type="radio" name="charge_type" value="days" class="chargeType" {{ $booking->charge_type == 'days' ? 'checked' : '' }}> Per Day
+            <label>Charge Type:</label><br>
+            <input type="radio" name="charge_type" value="km" class="chargeType" {{ $booking->charge_type=='km'?'checked':'' }}> Per KM
+            <input type="radio" name="charge_type" value="days" class="chargeType" {{ $booking->charge_type=='days'?'checked':'' }}> Per Day
         </div>
 
-        <!-- Distance (only for Per KM) -->
-        <div class="mb-3" id="distanceDiv" style="display:none;">
-            <label class="form-label">Distance (KM):</label>
-            <input type="number" name="distance" id="distanceInput" class="form-control" min="0" value="{{ $booking->charge_type == 'km' ? $booking->distance : '' }}">
-        </div>
-
-        <!-- Driver Selection -->
+        {{-- Driver --}}
         <div class="mb-3">
-            <label class="form-label">Select Driver:</label>
+            <label>Driver:</label>
             <select name="driver_id" id="driverSelect" class="form-select" required>
                 <option value="">-- Select Driver --</option>
                 @foreach($drivers as $driver)
-                <option value="{{ $driver->id }}" data-vehicle="{{ $driver->vehicle_id ?? '' }}"
-                    {{ $driver->id == $booking->driver_id ? 'selected' : '' }}>
+                <option value="{{ $driver->id }}" data-vehicle="{{ $driver->vehicle_id ?? '' }}" {{ $booking->driver_id==$driver->id?'selected':'' }}>
                     {{ $driver->name }} ({{ $driver->gender }})
                 </option>
                 @endforeach
             </select>
         </div>
 
-        <!-- Fare Display -->
+        {{-- Distance --}}
+        <div class="mb-3" id="distanceField" style="{{ $booking->charge_type=='km'?'display:block':'display:none' }}">
+            <label>Distance (in KM):</label>
+            <input type="number" min="1" id="distanceInput" class="form-control" name="distance" placeholder="Enter distance in km" value="{{ $booking->distance }}">
+        </div>
+
+        {{-- Fare --}}
         <div class="mb-3">
-            <label class="form-label">Fare:</label>
-            <input type="text" id="fareDisplay" class="form-control" readonly>
+            <label>Fare:</label>
+            <input type="text" id="fareDisplay" class="form-control" readonly value="{{ $booking->fare }}">
             <input type="hidden" name="fare" id="fareInput" value="{{ $booking->fare }}">
         </div>
 
-        <button type="submit" class="btn btn-success">Update Booking</button>
+        {{-- Buttons --}}
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Update Booking</button>
+            <a href="{{ route('bookings.index') }}" class="btn btn-secondary">Back to Bookings</a>
+        </div>
     </form>
 </div>
-@endsection
 
 @push('scripts')
 <script>
-    const vehicleSelect = document.getElementById('vehicleSelect');
-    const driverSelect = document.getElementById('driverSelect');
-    const carTypeRadios = document.querySelectorAll('.carType');
-    const chargeTypeRadios = document.querySelectorAll('.chargeType');
-    const rentStart = document.getElementById('rentStart');
-    const rentEnd = document.getElementById('rentEnd');
-    const distanceDiv = document.getElementById('distanceDiv');
-    const distanceInput = document.getElementById('distanceInput');
-    const fareDisplay = document.getElementById('fareDisplay');
-    const fareInput = document.getElementById('fareInput');
+    document.addEventListener('DOMContentLoaded', function() {
+        const vehicleSelect = document.getElementById('vehicleSelect');
+        const driverSelect = document.getElementById('driverSelect');
+        const carTypeRadios = document.querySelectorAll('.carType');
+        const chargeTypeRadios = document.querySelectorAll('.chargeType');
+        const rentStart = document.getElementById('rentStart');
+        const rentEnd = document.getElementById('rentEnd');
+        const fareDisplay = document.getElementById('fareDisplay');
+        const fareInput = document.getElementById('fareInput');
+        const distanceField = document.getElementById('distanceField');
+        const distanceInput = document.getElementById('distanceInput');
 
-    // Fare calculation function
-    function calculateFare() {
-        const vehicleOption = vehicleSelect.selectedOptions[0];
-        if (!vehicleOption) return;
+        function calculateFare() {
+            const vehicleOption = vehicleSelect.selectedOptions[0];
+            if (!vehicleOption) return;
+            const carType = [...carTypeRadios].find(r => r.checked)?.value;
+            const chargeType = [...chargeTypeRadios].find(r => r.checked)?.value;
+            if (!carType || !chargeType) return;
 
-        const carType = [...carTypeRadios].find(r => r.checked)?.value;
-        const chargeType = [...chargeTypeRadios].find(r => r.checked)?.value;
-        if (!carType || !chargeType) return;
-
-        let fare = 0;
-
-        if (chargeType === 'km') {
-            distanceDiv.style.display = 'block';
-            const distance = parseFloat(distanceInput.value) || 0;
-            fare = carType === 'ac' ? parseFloat(vehicleOption.dataset.acPrice) : parseFloat(vehicleOption.dataset.nonAcPrice);
-            fare = fare * distance;
-        } else {
-            distanceDiv.style.display = 'none';
-            fare = carType === 'ac' ? parseFloat(vehicleOption.dataset.acPricePerDay) : parseFloat(vehicleOption.dataset.nonAcPricePerDay);
-            if (rentStart.value && rentEnd.value) {
-                const start = new Date(rentStart.value);
-                const end = new Date(rentEnd.value);
-                const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1;
-                fare = fare * diffDays;
+            let fare = 0;
+            if (carType === 'ac') {
+                fare = chargeType === 'km' ? parseFloat(vehicleOption.dataset.acPrice) : parseFloat(vehicleOption.dataset.acPricePerDay);
+            } else {
+                fare = chargeType === 'km' ? parseFloat(vehicleOption.dataset.nonAcPrice) : parseFloat(vehicleOption.dataset.nonAcPricePerDay);
             }
+
+            if (chargeType === 'days') {
+                distanceField.style.display = 'none';
+                if (rentStart.value && rentEnd.value) {
+                    const start = new Date(rentStart.value);
+                    const end = new Date(rentEnd.value);
+                    const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 1;
+                    fare *= diffDays;
+                }
+            } else {
+                distanceField.style.display = 'block';
+                const distance = parseFloat(distanceInput.value) || 0;
+                fare *= distance;
+            }
+
+            fareDisplay.value = fare.toFixed(2);
+            fareInput.value = fare.toFixed(2);
         }
 
-        fareDisplay.value = fare.toFixed(2);
-        fareInput.value = fare.toFixed(2);
-    }
+        function filterDrivers() {
+            const vehicleId = vehicleSelect.value;
+            [...driverSelect.options].forEach(opt => {
+                if (opt.value === '') return;
+                opt.style.display = (opt.dataset.vehicle === vehicleId) ? 'block' : 'none';
+            });
+        }
 
-    // Filter drivers based on vehicle
-    function filterDrivers() {
-        const vehicleId = vehicleSelect.value;
-        [...driverSelect.options].forEach(opt => {
-            if (opt.value === "") return;
-            opt.style.display = (opt.dataset.vehicle === vehicleId) ? 'block' : 'none';
+        vehicleSelect.addEventListener('change', () => {
+            filterDrivers();
+            calculateFare();
         });
-    }
+        carTypeRadios.forEach(r => r.addEventListener('change', calculateFare));
+        chargeTypeRadios.forEach(r => r.addEventListener('change', calculateFare));
+        rentStart.addEventListener('change', calculateFare);
+        rentEnd.addEventListener('change', calculateFare);
+        distanceInput.addEventListener('input', calculateFare);
 
-    // Event listeners
-    vehicleSelect.addEventListener('change', () => {
-        filterDrivers();
-        calculateFare();
-    });
-    [...carTypeRadios, ...chargeTypeRadios, rentStart, rentEnd, distanceInput].forEach(el => el.addEventListener('change', calculateFare));
-
-    // Initial setup
-    window.addEventListener('load', () => {
+        // Initial calculation on page load
         filterDrivers();
         calculateFare();
     });
 </script>
 @endpush
+@endsection

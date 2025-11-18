@@ -4,10 +4,14 @@
         <li><a href="{{ route('vehicles.index') }}">🚗 Vehicles</a></li>
         <li><a href="{{ route('drivers.index') }}">👨‍✈️ Drivers</a></li>
         <li><a href="{{ route('assignments.index') }}">🔁 Assignments</a></li>
-        <li><a href="{{ route('fuels.index') }}">⛽ Fuel Records</a></li>
-        <li><a href="{{ route('reports.fuel') }}">📊 Reports</a></li>
-
-
-        
+        <li>
+            <a href="{{ route('reports.fuel') }}">
+                💰 Total Expense
+                @if(isset($totalExpense))
+                ({{ number_format($totalExpense, 2) }} ৳)
+                @endif
+            </a>
+        </li>
+        <li><a href="{{ route('bookings.index') }}">📄 Booking</a></li>
     </ul>
 </aside>

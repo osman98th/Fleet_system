@@ -1,74 +1,85 @@
 @extends('layouts.app')
-@section('title', 'Fuel Expense Report')
+
+@section('title','Fuel Report')
 
 @section('content')
-<div class="dashboard">
-    <h2>Fuel Expense Report</h2>
+<div class="container py-4 w-100" style="margin-left:250px;">
+    <h3 class="mb-4">⛽ Fuel Report</h3>
 
-    <div class="report-summary">
-        <table class="vehicle-table">
-            <thead>
+    <!-- Filter Form -->
+    <form method="GET" action="{{ route('reports.fuel') }}" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <input type="date" name="start_date" class="form-control" placeholder="Start Date" value="{{ request('start_date') }}">
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="end_date" class="form-control" placeholder="End Date" value="{{ request('end_date') }}">
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a href="{{ route('reports.fuel') }}" class="btn btn-secondary">Reset</a>
+        </div>
+        <div class="col-md-3 text-end">
+            <a href="{{ route('reports.fuel.pdf', request()->all()) }}" class="btn btn-success">Download PDF</a>
+        </div>
+    </form>
+
+    <!-- Report Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
                 <tr>
+                    <th>#</th>
                     <th>Vehicle</th>
                     <th>Total Liters</th>
                     <th>Total Cost</th>
-                    <th>Avg. Cost/Liter</th>
+                    <th>Avg Cost / Liter</th>
+                    <th>Total Days</th>
+                    <th>Total KM</th>
+                    <th>Cost / Day</th>
+                    <th>Cost / KM</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($reportData as $r)
+                @forelse($reportData as $index => $r)
                 <tr>
-                    <td>{{ $r->vehicle->vehicle_name ?? 'N/A' }}</td>
-                    <td>{{ number_format($r->total_liters, 2) }}</td>
-                    <td>${{ number_format($r->total_cost, 2) }}</td>
-                    <td>${{ number_format($r->avg_cost_per_liter, 2) }}</td>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $r->vehicle_name ?? '-' }}</td>
+                    <td>{{ $r->total_liters }}</td>
+                    <td>{{ $r->total_cost }}</td>
+                    <td>{{ $r->avg_cost_per_liter }}</td>
+                    <td>{{ $r->total_days }}</td>
+                    <td>{{ $r->total_km }}</td>
+                    <td>{{ $r->cost_per_day }}</td>
+                    <td>{{ $r->cost_per_km }}</td>
                 </tr>
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="9" class="text-center">No records found.</td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
 
-    <div class="chart-section">
-        <h3>Daily Fuel Expense Chart</h3>
-        <canvas id="fuelChart" width="800" height="350"></canvas>
-    </div>
+    <!-- Optional: Daily Chart -->
+    @if($dailyData->count())
+    <h5 class="mt-5">Daily Fuel Cost</h5>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Daily Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($dailyData as $d)
+            <tr>
+                <td>{{ $d->date }}</td>
+                <td>{{ $d->daily_cost }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
 </div>
-
-<script>
-    // Fuel Chart Data from Laravel
-    const dailyLabels = {!! json_encode($dailyData->pluck('date')) !!};
-    const dailyCosts = {!! json_encode($dailyData->pluck('daily_cost')) !!};
-
-    const ctx = document.getElementById('fuelChart').getContext('2d');
-    const chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: dailyLabels,
-            datasets: [{
-                label: 'Daily Fuel Cost ($)',
-                data: dailyCosts,
-                borderColor: '#007bff',
-                fill: false,
-                tension: 0.3,
-                borderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: true },
-                title: { display: true, text: 'Fuel Expense Over Time', font: { size: 16 } }
-            },
-            scales: {
-                y: { beginAtZero: true, title: { display: true, text: 'Cost ($)' } },
-                x: { title: { display: true, text: 'Date' } }
-            }
-        }
-    });
-</script>
-
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 @endsection

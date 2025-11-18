@@ -34,8 +34,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Fuels CRUD
     Route::resource('fuels', FuelController::class);
 
+        // total-expense
+    Route::get('/total-expense', [ReportController::class, 'totalExpense'])->name('reports.fuel');
+
     // Fuel Reports
-    Route::get('/reports/fuel', [ReportController::class, 'fuel'])->name('reports.fuel');
+    Route::get('/reports/fuel', [ReportController::class, 'fuelReport'])->name('reports.fuel');
+    Route::get('/reports/fuel/pdf', [ReportController::class, 'fuelReportPdf'])->name('reports.fuel.pdf');
+
+    // downloadPDF
+    Route::get('bookings/{id}/download', [BookingController::class, 'downloadPDF'])->name('bookings.downloadPDF');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -43,9 +50,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
-
-Route::middleware(['auth'])->group(function() {
+    Route::middleware(['auth'])->group(function () {
 
     // Booking CRUD
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
@@ -56,11 +61,9 @@ Route::middleware(['auth'])->group(function() {
     Route::delete('/bookings/{booking}', [BookingController::class, 'destroy'])->name('bookings.destroy');
     Route::get('bookings/{booking}/invoice', [BookingController::class, 'invoice'])->name('bookings.invoice');
 
-
     // AJAX route to get fare based on car and type
     Route::get('/bookings/get-fare', [BookingController::class, 'getFare'])->name('bookings.getFare');
 });
 
-
 // Auth routes
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

@@ -20,23 +20,12 @@
             height: 100vh;
             background: #343a40;
             position: fixed;
-            left: 0;
-            top: 0;
             padding-top: 60px;
-            transition: 0.3s;
             overflow-y: auto;
+            transition: 0.3s;
         }
 
-        .sidebar ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .sidebar ul li {
-            margin-bottom: 0;
-        }
-
-        .sidebar ul li a {
+        .sidebar a {
             color: #ddd;
             padding: 12px 20px;
             display: block;
@@ -44,8 +33,8 @@
             font-size: 15px;
         }
 
-        .sidebar ul li a:hover,
-        .sidebar ul li a.active {
+        .sidebar a:hover,
+        .sidebar .active {
             background: #495057;
             color: #fff;
         }
@@ -100,24 +89,14 @@
     </nav>
 
     <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-header">Admin Panel</div>
-        <ul>
-            <li><a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">🏠 Dashboard</a></li>
-            <li><a href="{{ route('vehicles.index') }}" class="{{ request()->routeIs('vehicles.*') ? 'active' : '' }}">🚗 Vehicles</a></li>
-            <li><a href="{{ route('drivers.index') }}" class="{{ request()->routeIs('drivers.*') ? 'active' : '' }}">👨‍✈️ Drivers</a></li>
-            <li><a href="{{ route('assignments.index') }}" class="{{ request()->routeIs('assignments.*') ? 'active' : '' }}">🔁 Assignments</a></li>
-            <li>
-                <a href="{{ route('reports.fuel') }}" class="{{ request()->routeIs('reports.fuel') ? 'active' : '' }}">
-                    💰 Total Expense
-                    @if(isset($totalExpense))
-                    ({{ number_format($totalExpense, 2) }} ৳)
-                    @endif
-                </a>
-            </li>
-            <li><a href="{{ route('bookings.index') }}" class="{{ request()->routeIs('bookings.*') ? 'active' : '' }}">📄 Booking</a></li>
-        </ul>
-    </aside>
+        <a href="{{ route('dashboard') }}" class="active"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a>
+        <a href="{{ route('vehicles.index') }}"><i class="bi bi-truck me-2"></i> Vehicles</a>
+        <a href="{{ route('drivers.index') }}"><i class="bi bi-person-badge me-2"></i> Drivers</a>
+        <a href="{{ route('assignments.index') }}"><i class="bi bi-link me-2"></i> Assignments</a>
+        <a href="{{ route('bookings.index') }}"><i class="bi bi-file-earmark-text me-2"></i> Booking</a>
+    </div>
 
     <!-- Page Content -->
     <div class="content">
@@ -131,7 +110,6 @@
             sidebar.classList.toggle('show');
         });
     </script>
-
     @stack('scripts')
 </body>
 

@@ -3,31 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Model
 {
-    // If the table name follows Laravel convention, this is optional
-    // protected $table = 'customers';
-
-    // Mass assignable fields
     protected $fillable = [
+        'user_id',
         'name',
         'email',
         'phone',
         'address',
     ];
 
-    /**
-     * Get all bookings for this customer
-     */
+    // A user has one customer profile
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // A customer can have many bookings
     public function bookings()
     {
         return $this->hasMany(Booking::class);
-    }
-
-     public function users()
-    {
-        return $this->belongsTo(User::class);
     }
 }

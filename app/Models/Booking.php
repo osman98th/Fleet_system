@@ -22,15 +22,18 @@ class Booking extends Model
         'status',
     ];
 
-    public function vehicle(){
+    public function vehicle()
+    {
         return $this->belongsTo(Vehicle::class);
     }
 
-    public function driver(){
+    public function driver()
+    {
         return $this->belongsTo(Driver::class);
     }
 
-    public function customer(){
-        return $this->belongsTo(User::class,'customer_id');
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 }
