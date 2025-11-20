@@ -3,6 +3,43 @@
 @section('title','Dashboard')
 
 @section('content')
+
+<style>
+    /* === Circular Features CSS === */
+
+    #circleContainer {
+        position: relative;
+        overflow: visible !important;
+    }
+
+    #featureCircle div {
+        position: absolute;
+        background: linear-gradient(45deg, #0d6efd, #6610f2);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: transform .3s ease, background .3s ease;
+        z-index: 20;
+    }
+
+    #featureCircle div:hover {
+        transform: scale(1.2) !important;
+        background: linear-gradient(45deg, #ffc107, #fd7e14);
+        color: black;
+    }
+
+    .car-center {
+        z-index: 30;
+        background: #fff;
+        border-radius: 50%;
+        border: 3px solid #0d6efd;
+    }
+</style>
+
+
 <div class="container-fluid py-4 d-flex flex-column min-vh-100">
 
     <h2 class="mb-4">🚀 Fleet Management Dashboard</h2>
@@ -20,7 +57,7 @@
         @endphp
 
         @foreach($cards as $card)
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card shadow-sm text-white {{ $card['bg'] }} h-100">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
@@ -34,49 +71,34 @@
         @endforeach
     </div>
 
-    <!-- Filters -->
-    <div class="row mb-4 g-3">
-        <div class="col-md-3">
-            <select id="filterVehicle" class="form-select shadow-sm">
-                <option value="">-- All Vehicles --</option>
-                @foreach($vehicles as $v)
-                <option value="{{ $v->id }}">{{ $v->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-md-3">
-            <select id="filterDriver" class="form-select shadow-sm">
-                <option value="">-- All Drivers --</option>
-                @foreach($drivers as $d)
-                <option value="{{ $d->id }}">{{ $d->name }}</option>
-                @endforeach
-            </select>
+
+
+    <!-- Circular Features Layout -->
+    <div class="text-center mb-5">
+        <h4 class="mb-3">Top Features of Fleet Management</h4>
+
+        <div id="circleContainer"
+            class="position-relative d-flex justify-content-center align-items-center mx-auto"
+            style="width:90vw; max-width:400px; aspect-ratio:1/1;">
+
+            <!-- Center Car Icon -->
+            <div class="car-center shadow position-absolute d-flex justify-content-center align-items-center"
+                style="width:30%; aspect-ratio:1/1;">
+                <img src="https://cdn-icons-png.flaticon.com/512/7434/7434141.png"
+                    class="img-fluid" style="width:60%; height:60%;">
+            </div>
+
+            <!-- Dynamic Circular Features -->
+            <div id="featureCircle"
+                class="position-absolute top-50 start-50 translate-middle w-100 h-100"></div>
         </div>
     </div>
 
-    <!-- Charts -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">⛽ Fuel Cost (Last 7 Days)</h5>
-                    <canvas id="fuelChart" height="120"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">💰 Cost (Last 7 Days)</h5>
-                    <canvas id="costChart" height="120"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Recent Fuel Records -->
     <div class="row mb-4 flex-grow-1">
-        <div class="col-md-12">
+        <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title">⛽ Recent Fuel Records</h5>
@@ -108,110 +130,50 @@
     </div>
 
 </div>
+
+
+
 @endsection
 
+
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Charts
-    const fuelCtx = document.getElementById('fuelChart').getContext('2d');
-    const costCtx = document.getElementById('costChart').getContext('2d');
+    document.addEventListener("DOMContentLoaded", function() {
 
-    const fuelChart = new Chart(fuelCtx, {
-        type: 'line',
-        data: {
-            labels: {
-                !!json_encode($fuelChartLabels) !!
-            },
-            datasets: [{
-                label: 'Fuel Cost (৳)',
-                data: {
-                    !!json_encode($fuelChartData) !!
-                },
-                backgroundColor: 'rgba(54,162,235,0.2)',
-                borderColor: 'rgba(54,162,235,1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true
-        }
-    });
+        // === Circular Features Data ===
+        const features = [
+            "Real-Time Notification", "Reporting System", "Vehicle Assignment",
+            "Service Management", "Inventory Management", "Human Resource Management",
+            "Dynamic Admin Panel", "User Management", "GPS Tracking",
+            "Fuel Management", "Financial Management", "Inventory Control"
+        ];
 
-    const costChart = new Chart(costCtx, {
-        type: 'bar',
-        data: {
-            labels: {
-                !!json_encode($costChartLabels) !!
-            },
-            datasets: [{
-                label: 'Cost Amount (৳)',
-                data: {
-                    !!json_encode($costChartData) !!
-                },
-                backgroundColor: 'rgba(255,99,132,0.6)',
-                borderColor: 'rgba(255,99,132,1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true
-        }
-    });
+        const container = document.getElementById("featureCircle");
 
-    // AJAX Filter
-    async function loadChartsData() {
-        const vehicle_id = document.getElementById("filterVehicle").value;
-        const driver_id = document.getElementById("filterDriver").value;
+        function renderFeatures() {
+            container.innerHTML = "";
 
-        try {
-            const fuelRes = await fetch(`{{ route('dashboard.filterFuel') }}?vehicle_id=${vehicle_id}&driver_id=${driver_id}`);
-            const fuelData = await fuelRes.json();
+            const diameter = container.offsetWidth;
+            const radius = diameter / 2 - 45; // safe margin
+            const angleStep = (2 * Math.PI) / features.length;
 
-            const fuelLabels = [];
-            const fuelCosts = [];
-            let tbody = '';
+            features.forEach((feature, index) => {
+                const angle = index * angleStep - Math.PI / 2;
+                const x = radius * Math.cos(angle);
+                const y = radius * Math.sin(angle);
 
-            fuelData.forEach(r => {
-                tbody += `<tr>
-                    <td>${r.vehicle}</td>
-                    <td>${r.driver}</td>
-                    <td>${r.cost}</td>
-                    <td>${r.date}</td>
-                </tr>`;
-                fuelLabels.push(r.date);
-                fuelCosts.push(r.cost);
+                const div = document.createElement("div");
+                div.textContent = feature;
+                div.style.left = "50%";
+                div.style.top = "50%";
+                div.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+
+                container.appendChild(div);
             });
-
-            document.getElementById("fuelTableBody").innerHTML = tbody;
-            fuelChart.data.labels = fuelLabels;
-            fuelChart.data.datasets[0].data = fuelCosts;
-            fuelChart.update();
-
-            // Costs
-            const costRes = await fetch(`{{ route('dashboard.filterCost') }}?vehicle_id=${vehicle_id}&driver_id=${driver_id}`);
-            const costData = await costRes.json();
-
-            const costLabels = [];
-            const costAmounts = [];
-
-            costData.forEach(r => {
-                costLabels.push(r.date);
-                costAmounts.push(r.amount);
-            });
-
-            costChart.data.labels = costLabels;
-            costChart.data.datasets[0].data = costAmounts;
-            costChart.update();
-
-        } catch (error) {
-            console.error("Error fetching charts data:", error);
         }
-    }
 
-    document.getElementById("filterVehicle").addEventListener("change", loadChartsData);
-    document.getElementById("filterDriver").addEventListener("change", loadChartsData);
+        renderFeatures();
+        window.addEventListener("resize", renderFeatures);
+    });
 </script>
 @endsection
