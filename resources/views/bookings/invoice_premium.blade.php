@@ -78,8 +78,8 @@
          <div>
             <div class="company-name">Fleet Management Co.</div>
         <div class="company-address">
-            123 Main Street, Dhaka, Bangladesh<br>
-            Phone: +880123456789 | Email: info@fleetco.com
+            64/ Ramna Park Avenue, Dhaka, Bangladesh<br>
+            Phone: +8801797147515 | Email:osman98th@gmail.com
         </div>
         
     </div>

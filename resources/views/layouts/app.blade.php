@@ -9,13 +9,18 @@
     <!-- Bootstrap 5 + Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <!-- Font Awesome Free CDN (no integrity, no token) -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
+    <!-- Font Awesome Free CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <style>
         body {
             background: #f8f9fa;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.bg-dark {
+            background: #121212;
+            color: #e0e0e0;
         }
 
         .sidebar {
@@ -26,7 +31,7 @@
             left: 0;
             top: 0;
             padding-top: 60px;
-            transition: 0.3s;
+            transition: transform 0.3s;
             overflow-y: auto;
         }
 
@@ -45,6 +50,7 @@
             display: block;
             text-decoration: none;
             font-size: 15px;
+            transition: background 0.3s, color 0.3s;
         }
 
         .sidebar ul li a:hover,
@@ -57,7 +63,7 @@
             margin-left: 240px;
             padding: 20px;
             margin-top: 60px;
-            transition: 0.3s;
+            transition: margin-left 0.3s;
         }
 
         @media(max-width:768px) {
@@ -93,6 +99,7 @@
             <button class="btn btn-outline-light d-md-none" id="menuToggle">☰</button>
             <a class="navbar-brand ms-2" href="{{ route('dashboard') }}">{{ config('app.name') }}</a>
             <div class="d-flex">
+                <button id="themeToggle" class="btn btn-sm btn-outline-secondary me-2">🌙 Dark Mode</button>
                 <a href="{{ route('profile.edit') }}" class="btn btn-sm btn-outline-light me-2">Profile</a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -110,15 +117,16 @@
             <li><a href="{{ route('vehicles.index') }}" class="{{ request()->routeIs('vehicles.*') ? 'active' : '' }}">🚗 Vehicles</a></li>
             <li><a href="{{ route('drivers.index') }}" class="{{ request()->routeIs('drivers.*') ? 'active' : '' }}">👨‍✈️ Drivers</a></li>
             <li><a href="{{ route('assignments.index') }}" class="{{ request()->routeIs('assignments.*') ? 'active' : '' }}">🔁 Assignments</a></li>
+            <li><a href="{{ route('reports.fuel') }}" class="{{ request()->routeIs('reports.fuel') ? 'active' : '' }}">⛽ Fuel Report</a></li>
             <li>
-                <a href="{{ route('reports.fuel') }}" class="{{ request()->routeIs('reports.fuel') ? 'active' : '' }}">
-                    💰 Total Expense
-                    @if(isset($totalExpense))
-                    ({{ number_format($totalExpense, 2) }} ৳)
+                <a href="{{ route('costs.index') }}" class="{{ request()->routeIs('costs.*') ? 'active' : '' }}">
+                    💰 Costs
+                    @if(isset($totalMonthlyCost))
+                    ({{ number_format($totalMonthlyCost,2) }} ৳)
                     @endif
                 </a>
             </li>
-            <li><a href="{{ route('bookings.index') }}" class="{{ request()->routeIs('bookings.*') ? 'active' : '' }}">📄 Booking</a></li>
+            <li><a href="{{ route('bookings.index') }}" class="{{ request()->routeIs('bookings.*') ? 'active' : '' }}">📄 Bookings</a></li>
         </ul>
     </aside>
 
@@ -127,7 +135,10 @@
         @yield('content')
     </div>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Sidebar Toggle -->
     <script>
         const sidebar = document.getElementById('sidebar');
         document.getElementById('menuToggle').addEventListener('click', () => {
@@ -135,7 +146,17 @@
         });
     </script>
 
+    <!-- Dark/Light Mode Toggle -->
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('bg-dark');
+            themeToggle.textContent = document.body.classList.contains('bg-dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
+        });
+    </script>
+
     @stack('scripts')
+    @yield('scripts')
 </body>
 
 </html>

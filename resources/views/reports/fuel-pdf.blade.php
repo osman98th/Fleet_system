@@ -3,71 +3,92 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Fuel Report</title>
+    <title>Fuel Report PDF</title>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
         th,
         td {
-            border: 1px solid #000;
+            border: 1px solid #333;
             padding: 5px;
-            text-align: center;
+            text-align: left;
         }
 
         th {
-            background-color: #ddd;
+            background-color: #f2f2f2;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .chart {
+            text-align: center;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 
 <body>
-    <h3 style="text-align: center;">⛽ Fuel Report</h3>
+    <h2>Fuel Report</h2>
 
+    {{-- Filters --}}
+    @if(request('vehicle_id') || request('month') || request('from_date') || request('to_date'))
+    <p>
+        Filters:
+        @if(request('vehicle_id')) Vehicle: {{ $fuelRecords->first()?->vehicle?->name ?? 'N/A' }}; @endif
+        @if(request('month')) Month: {{ \Carbon\Carbon::parse(request('month').'-01')->format('F Y') }}; @endif
+        @if(request('from_date')) From: {{ \Carbon\Carbon::parse(request('from_date'))->format('d M, Y') }}; @endif
+        @if(request('to_date')) To: {{ \Carbon\Carbon::parse(request('to_date'))->format('d M, Y') }}; @endif
+    </p>
+    @endif
+
+    {{-- Chart --}}
+    @if(isset($chartImage))
+    <div class="chart">
+        <img src="{{ $chartImage }}" alt="Daily Fuel Cost Chart" style="width:100%; max-width:700px;">
+    </div>
+    @endif
+
+    {{-- Fuel Records Table --}}
     <table>
         <thead>
             <tr>
                 <th>#</th>
+                <th>Date</th>
                 <th>Vehicle</th>
-                <th>Total Liters</th>
-                <th>Total Cost</th>
-                <th>Avg Cost per Liter</th>
-                <th>Total Days</th>
-                <th>Total KM</th>
-                <th>Cost per Day</th>
-                <th>Cost per KM</th>
+                <th>Driver</th>
+                <th>Liters</th>
+                <th>Cost</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($reportData as $key => $r)
+            @forelse($fuelRecords as $record)
             <tr>
-                <td>{{ $key + 1 }}</td>
-                <td>{{ $r->vehicle_name ?? '-' }}</td>
-                <td>{{ number_format($r->total_liters ?? 0, 2) }}</td>
-                <td>{{ number_format($r->total_cost ?? 0, 2) }}</td>
-                <td>{{ number_format($r->avg_cost_per_liter ?? 0, 2) }}</td>
-                <td>{{ $r->total_days ?? 0 }}</td>
-                <td>{{ number_format($r->total_km ?? 0, 2) }}</td>
-                <td>{{ number_format($r->cost_per_day ?? 0, 2) }}</td>
-                <td>{{ number_format($r->cost_per_km ?? 0, 2) }}</td>
+                <td>{{ $loop->iteration }}</td>
+                <td>{{ \Carbon\Carbon::parse($record->date)->format('d M, Y') }}</td>
+                <td>{{ $record->vehicle?->name ?? '-' }}</td>
+                <td>{{ $record->driver?->name ?? '-' }}</td>
+                <td>{{ $record->liters }}</td>
+                <td>{{ number_format($record->cost, 2) }}</td>
             </tr>
-            @endforeach
+            @empty
+            <tr>
+                <td colspan="6" style="text-align: center;">No records found.</td>
+            </tr>
+            @endforelse
         </tbody>
     </table>
-
-    @if(!empty($chartImage))
-    <div style="text-align:center; margin-top:20px;">
-        <img src="{{ $chartImage }}" alt="Fuel Chart" style="max-width:100%;">
-    </div>
-    @endif
 </body>
 
 </html>
